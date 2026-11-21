@@ -1,0 +1,23 @@
+GFOpenPhotoCraft 0.1.0 Q1
+========================
+
+This is a native AmigaOS 3.x 68040 qualification build of PhotoCraft.
+
+Working in this build:
+- native GFOpenLayout editor window;
+- bounded RGBA raster and layer model;
+- New, Add Layer and Show/Hide Layer;
+- Invert, Grayscale, Brighter and Darker;
+- one-step pixel Undo and Redo;
+- live composited pixel preview.
+
+Not yet qualified:
+- file requesters and IFF/DataTypes open/save;
+- pointer brush painting;
+- close-gadget return to Workbench;
+- upstream egui interface or full .pcraft compatibility;
+- updater installation path.
+
+The 21 November isolated-68040 run qualified launch, Grayscale, Undo, Redo and
+live preview redraw. Do not promote this Q1 archive to an RC until the close
+gadget returns cleanly to Workbench and that result is captured.
