@@ -26,14 +26,15 @@ later gate. The Q1 package is therefore not called an RC.
 
 ## Native evidence
 
-On 21 November 2026 the Hunk build with SHA-256
-`7d40a2adcbff320c21c555d67acbb55e23ec3e7ab9025600812e899762f24fd8`
+On 21 November 2026 the pinned-dependency Hunk build with SHA-256
+`269066c44383b4a36897031f61b0a5593d3a7778989591470aa88bcb6841bd8a`
 was run in the isolated `t1-photocraft-20261120` 68040 lab. The editor opened,
 Grayscale redrew all 24 preview cells with distinct luminance values, Undo
 restored the colour raster, and Redo restored the grayscale raster. Window
-titles and status text followed each action. Close/return is still an explicit
-promotion gate because the native close gadget did not close the window in
-that run.
+titles and status text followed each action. The close gadget then removed the
+window and AmigaDOS `Status` confirmed that PhotoCraft was no longer running.
+The local Q1 native gates are complete; RC promotion is left to review after
+the queued self-hosted CI build supplies its independent receipt.
 
 ## Native services
 
