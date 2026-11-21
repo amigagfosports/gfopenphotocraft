@@ -2,3 +2,4 @@
 self-hosted-runner:
   labels:
     - macos-release  # org larger runner (M2 Pro), used by release.yml
+    - lumavault  # org-local Linux build runner
