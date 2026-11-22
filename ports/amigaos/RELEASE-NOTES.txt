@@ -3,6 +3,9 @@ GFOpenPhotoCraft 0.1.0 RC1
 
 This is a native AmigaOS 3.x 68040 qualification build of PhotoCraft.
 
+Install by unpacking `GFOpenPhotoCraft-0.1.0-rc1-68040.lha`, placing the
+PhotoCraft drawer where wanted, and starting `PhotoCraft` from Workbench.
+
 Working in this build:
 - native GFOpenLayout editor window;
 - bounded RGBA raster and layer model;

@@ -61,3 +61,20 @@ This receipt qualifies the native 6 x 4 layered editor and bounded PCF1
 persistence path. It does not claim ASL file requesters, IFF/DataTypes
 import/export, pointer painting, the upstream egui interface or full `.pcraft`
 compatibility.
+
+## RC1 distributable package
+
+LumaVault Kitchen job `j20261122T145502-70d810` cooked exact Forge commit
+`34c22376a02098e0f3c4c0c338c18ba831268e7d` on the `os32` stove with target
+`package`. It repeated all seven tests, clippy, the native Hunk and symbol
+gates before creating the Workbench-ready LhA. The job exited 0.
+
+- archive: `GFOpenPhotoCraft-0.1.0-rc1-68040.lha`
+- size: 33,959 bytes
+- SHA-256:
+  `7062add7426462127779f6b3eff5c7827bf1d6e0637bd03b078aa40e4abf9ece`
+- contents: native PhotoCraft drawer, ReadMe, checksums, MIT and Apache-2.0
+  licences, notice and attribution
+
+RC1 is a manual Workbench installation: unpack the drawer and run
+`PhotoCraft`. An Installer/updater path remains outside the claimed RC1 scope.
