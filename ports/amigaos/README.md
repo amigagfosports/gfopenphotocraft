@@ -53,4 +53,7 @@ hostile-file run is recorded separately in `NATIVE-UAT-20261122.md`.
 `check.sh` runs formatting, host tests, clippy, the freestanding m68k build,
 symbol checks and relocation checks. `build-amiga.sh` produces the same Hunk
 plate on the os32 Kitchen stove; `package-qualification.sh` optionally wraps
-that plate in an LHA archive when `lha` is installed.
+that plate in an LHA archive when `lha` is installed. The Kitchen release
+entry point is `package/build-amiga.sh`; it emits the checksummed RC1 LhA with
+the executable, ReadMe, licences, notice and attribution. RC1 installs by
+unpacking the PhotoCraft drawer and running `PhotoCraft` from Workbench.
