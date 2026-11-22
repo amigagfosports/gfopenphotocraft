@@ -16,13 +16,14 @@ use alloc::vec::Vec;
 use model::{Document, ModelError, Pixel};
 
 #[cfg(target_arch = "m68k")]
-const EDITOR_MARKUP: &core::ffi::CStr = c"<column id=app><row id=toolbar><button id=new title='Create a fresh image'>New</button><button id=open disabled title='IFF open arrives after the native file requester gate'>Open</button><button id=save disabled title='IFF save arrives after the native file requester gate'>Save</button><div class=rule></div><button id=undo>Undo</button><button id=redo>Redo</button><div class=rule></div><button id=invert>Invert</button><button id=gray>Grayscale</button><button id=brighter>Brighter</button><button id=darker>Darker</button><div class=spacer></div><div class=badge>68k native</div></row><row id=workspace><column id=tools><div class=heading>Tools</div><button id=brush class=active>Brush</button><button id=layer>Add Layer</button><button id=visibility>Show / Hide</button><div class=heading>Colour</div><div class=swatchrow><div class='swatch ink'></div><div class='swatch paper'></div></div><div class=help>Image operations update the real bounded raster model.</div></column><column id=center><row id=documentbar><div class=tab>Untitled.pcraft *</div><div class=spacer></div><div id=zoom>600%</div></row><div id=viewport><column id=canvas><row class=pixels><div id=p0 class=pixel></div><div id=p1 class=pixel></div><div id=p2 class=pixel></div><div id=p3 class=pixel></div><div id=p4 class=pixel></div><div id=p5 class=pixel></div></row><row class=pixels><div id=p6 class=pixel></div><div id=p7 class=pixel></div><div id=p8 class=pixel></div><div id=p9 class=pixel></div><div id=p10 class=pixel></div><div id=p11 class=pixel></div></row><row class=pixels><div id=p12 class=pixel></div><div id=p13 class=pixel></div><div id=p14 class=pixel></div><div id=p15 class=pixel></div><div id=p16 class=pixel></div><div id=p17 class=pixel></div></row><row class=pixels><div id=p18 class=pixel></div><div id=p19 class=pixel></div><div id=p20 class=pixel></div><div id=p21 class=pixel></div><div id=p22 class=pixel></div><div id=p23 class=pixel></div></row></column></div></column><column id=inspector><div class=heading>Layers</div><div class='layer selected'><span class=eye>*</span><span id=activelabel>Paint layer</span></div><div id=addedlayer class='layer selected' hidden><span class=eye>*</span> Accent layer</div><div class=layer><span class=eye>*</span> Background</div><div class=heading>Properties</div><row><label>Width</label><input value='6 px' disabled></row><row><label>Height</label><input value='4 px' disabled></row><row><label>Mode</label><input value='RGBA 8' disabled></row><row><label>Opacity</label><input value='100%' disabled></row><div class=heading>Histogram</div><row class=hist><div class=h1></div><div class=h2></div><div class=h3></div><div class=h4></div><div class=h5></div></row></column></row><row id=status><div id=statusline>Ready - choose an image operation</div><div class=spacer></div><div>6 x 4 pixels / <span id=layercount>2 layers</span></div></row></column>";
+const EDITOR_MARKUP: &core::ffi::CStr = c"<column id=app><row id=toolbar><button id=new title='Create a fresh image'>New</button><button id=open title='Open SYS:PhotoCraft.pcf'>Open</button><button id=save title='Save SYS:PhotoCraft.pcf'>Save</button><div class=rule></div><button id=undo>Undo</button><button id=redo>Redo</button><div class=rule></div><button id=invert>Invert</button><button id=gray>Grayscale</button><button id=brighter>Brighter</button><button id=darker>Darker</button><div class=spacer></div><div class=badge>68k native</div></row><row id=workspace><column id=tools><div class=heading>Tools</div><button id=brush class=active>Brush</button><button id=layer>Add Layer</button><button id=visibility>Show / Hide</button><div class=heading>Colour</div><div class=swatchrow><div class='swatch ink'></div><div class='swatch paper'></div></div><div class=help>Image operations update the real bounded raster model.</div></column><column id=center><row id=documentbar><div class=tab>Untitled.pcraft *</div><div class=spacer></div><div id=zoom>600%</div></row><div id=viewport><column id=canvas><row class=pixels><div id=p0 class=pixel></div><div id=p1 class=pixel></div><div id=p2 class=pixel></div><div id=p3 class=pixel></div><div id=p4 class=pixel></div><div id=p5 class=pixel></div></row><row class=pixels><div id=p6 class=pixel></div><div id=p7 class=pixel></div><div id=p8 class=pixel></div><div id=p9 class=pixel></div><div id=p10 class=pixel></div><div id=p11 class=pixel></div></row><row class=pixels><div id=p12 class=pixel></div><div id=p13 class=pixel></div><div id=p14 class=pixel></div><div id=p15 class=pixel></div><div id=p16 class=pixel></div><div id=p17 class=pixel></div></row><row class=pixels><div id=p18 class=pixel></div><div id=p19 class=pixel></div><div id=p20 class=pixel></div><div id=p21 class=pixel></div><div id=p22 class=pixel></div><div id=p23 class=pixel></div></row></column></div></column><column id=inspector><div class=heading>Layers</div><div class='layer selected'><span class=eye>*</span><span id=activelabel>Paint layer</span></div><div id=addedlayer class='layer selected' hidden><span class=eye>*</span> Accent layer</div><div class=layer><span class=eye>*</span> Background</div><div class=heading>Properties</div><row><label>Width</label><input value='6 px' disabled></row><row><label>Height</label><input value='4 px' disabled></row><row><label>Mode</label><input value='RGBA 8' disabled></row><row><label>Opacity</label><input value='100%' disabled></row><div class=heading>Histogram</div><row class=hist><div class=h1></div><div class=h2></div><div class=h3></div><div class=h4></div><div class=h5></div></row></column></row><row id=status><div id=statusline>Ready - choose an image operation</div><div class=spacer></div><div>6 x 4 pixels / <span id=layercount>2 layers</span></div></row></column>";
 
 #[cfg(target_arch = "m68k")]
 const EDITOR_CSS: &core::ffi::CStr = c"*{box-sizing:border-box}#app{width:100%;height:100%;background:#20242b;color:#e9edf4}#toolbar{height:48px;padding:7px;gap:5px;background:#303640;border-bottom:1px solid #080a0e;align-items:center}#toolbar button{min-width:64px;height:32px;background:#4a5260;color:#ffffff;border:1px solid #717b8b}.spacer{flex:1}.rule{width:1px;height:29px;background:#6a7280;margin:0 3px}.badge{padding:7px 10px;background:#236b56;color:#ffffff;border-radius:4px}#workspace{flex:1;min-height:0}#tools{width:142px;padding:10px;gap:8px;background:#292f38;border-right:1px solid #080a0e}#tools button{height:37px;text-align:left;background:#3b424e;color:#f4f7fb;border:1px solid #5f6877}#tools .active{background:#28775f;border-color:#45b28d}.heading{font-weight:bold;padding:8px 3px 5px;color:#aeb8c8;border-bottom:1px solid #56606f}.swatchrow{height:48px;gap:8px}.swatch{width:38px;height:38px;border:2px solid #bfc7d2}.ink{background:#ee6a45}.paper{background:#f4d47a}.help{padding-top:8px;color:#b9c2ce;line-height:1.35}#center{flex:1;min-width:0;background:#161a20}#documentbar{height:38px;padding:5px 8px;background:#282e37;border-bottom:1px solid #080a0e;align-items:center}.tab{padding:7px 18px;background:#3a424e;border:1px solid #687281;border-bottom:0}#zoom{padding:5px 9px;background:#1c2128;border:1px solid #515a68}#viewport{flex:1;padding:24px;background:#4d535d;align-items:center;justify-content:center;overflow:auto}#canvas{padding:12px;background:#d9d9d9;border:1px solid #111318;box-shadow:5px 6px 12px #20242a;gap:0}.pixels{height:56px;gap:0}.pixel{width:56px;height:56px;border:1px solid #59606a}#p0{background:#1c2d4a}#p1{background:#264c6c}#p2{background:#2d7777}#p3{background:#479770}#p4{background:#97bb6f}#p5{background:#e8ce70}#p6{background:#2d435d}#p7{background:#376b84}#p8{background:#42918b}#p9{background:#68b480}#p10{background:#ccbf68}#p11{background:#eb9655}#p12{background:#453c5f}#p13{background:#654e7b}#p14{background:#975b7e}#p15{background:#c86370}#p16{background:#e8765b}#p17{background:#efa95e}#p18{background:#53454e}#p19{background:#7c525b}#p20{background:#ae6866}#p21{background:#d38667}#p22{background:#e3ae76}#p23{background:#eed3a4}#inspector{width:222px;padding:10px;gap:6px;background:#292f38;border-left:1px solid #080a0e}.layer{padding:8px;background:#373e49;border:1px solid #596271}.layer.selected{background:#28775f;color:#ffffff}.eye{margin-right:8px}#inspector row{height:31px;gap:5px;align-items:center}#inspector label{width:59px;color:#bfc7d2}#inspector input{flex:1;min-width:0;background:#20252d;color:#ffffff;border:1px solid #515b69}.hist{align-items:end;height:64px;padding:5px;background:#1d2229}.hist div{width:25px;background:#5aa78e}.h1{height:18px}.h2{height:39px}.h3{height:52px}.h4{height:31px}.h5{height:45px}#status{height:31px;padding:7px 10px;background:#303640;border-top:1px solid #080a0e;color:#cbd3df}";
 
 #[cfg(target_arch = "m68k")]
-struct EditorState {
+struct EditorState<'runtime> {
+    runtime: &'runtime amiga_runtime::Runtime,
     document: Document,
     undo: Vec<Pixel>,
     redo: Vec<Pixel>,
@@ -38,9 +39,10 @@ enum InitError {
 }
 
 #[cfg(target_arch = "m68k")]
-impl EditorState {
-    fn new() -> Result<Self, InitError> {
+impl<'runtime> EditorState<'runtime> {
+    fn new(runtime: &'runtime amiga_runtime::Runtime) -> Result<Self, InitError> {
         Ok(Self {
+            runtime,
             document: demo_document()?,
             undo: Vec::new(),
             redo: Vec::new(),
@@ -60,6 +62,68 @@ impl EditorState {
             }
             Err(_) => self.out_of_memory(),
         }
+    }
+
+    fn open(&mut self) {
+        let mut bytes = Vec::new();
+        if bytes.try_reserve_exact(model::MAX_FILE_BYTES).is_err() {
+            self.title = c"PhotoCraft - Open failed: memory";
+            self.status = c"Not enough memory for the bounded PCF1 buffer";
+            return;
+        }
+        bytes.resize(model::MAX_FILE_BYTES, 0);
+        let Ok(input) = self.runtime.read_file(c"SYS:PhotoCraft.pcf", bytes.as_mut_slice()) else {
+            self.title = c"PhotoCraft - Open failed";
+            self.status = c"SYS:PhotoCraft.pcf could not be read";
+            return;
+        };
+        match Document::decode(input) {
+            Ok(document) if document.width() == 6 && document.height() == 4 => {
+                self.document = document;
+                self.undo.clear();
+                self.redo.clear();
+                self.title = c"PhotoCraft - Document opened";
+                self.status = c"SYS:PhotoCraft.pcf opened";
+            }
+            Ok(_) => {
+                self.title = c"PhotoCraft - Open failed: canvas";
+                self.status = c"This compact editor accepts a 6 x 4 PCF1 canvas";
+            }
+            Err(ModelError::InvalidFormat(model::FormatStage::Magic)) => {
+                self.title = c"PhotoCraft - Open failed: magic";
+                self.status = c"PCF1 magic or framing was rejected";
+            }
+            Err(ModelError::InvalidFormat(model::FormatStage::TrailingData)) => {
+                self.title = c"PhotoCraft - Open failed: trailing data";
+                self.status = c"PCF1 trailing data was rejected";
+            }
+            Err(_) => {
+                self.title = c"PhotoCraft - Open failed: invalid PCF1";
+                self.status = c"The bounded PCF1 parser rejected the document";
+            }
+        }
+    }
+
+    fn save(&mut self) {
+        let mut bytes = Vec::new();
+        if bytes.try_reserve_exact(model::MAX_FILE_BYTES).is_err() {
+            self.title = c"PhotoCraft - Save failed: memory";
+            self.status = c"Not enough memory for the bounded PCF1 buffer";
+            return;
+        }
+        bytes.resize(model::MAX_FILE_BYTES, 0);
+        let Ok(length) = self.document.encode(bytes.as_mut_slice()) else {
+            self.title = c"PhotoCraft - Save failed: document limit";
+            self.status = c"The document exceeds the native PCF1 file limit";
+            return;
+        };
+        if self.runtime.write_file(c"SYS:PhotoCraft.pcf", &bytes[..length]).is_err() {
+            self.title = c"PhotoCraft - Save failed";
+            self.status = c"SYS:PhotoCraft.pcf could not be written";
+            return;
+        }
+        self.title = c"PhotoCraft - Document saved";
+        self.status = c"SYS:PhotoCraft.pcf saved";
     }
 
     fn edit(&mut self, operation: fn(&mut Document) -> Result<(), ModelError>, title: &'static core::ffi::CStr, status: &'static core::ffi::CStr) {
@@ -151,7 +215,7 @@ impl EditorState {
 }
 
 #[cfg(target_arch = "m68k")]
-impl amiga_gfopenlayout::EventSink for EditorState {
+impl amiga_gfopenlayout::EventSink for EditorState<'_> {
     fn on_event(&mut self, event: amiga_gfopenlayout::Event<'_>) -> bool {
         use amiga_gfopenlayout::EventKind;
 
@@ -162,15 +226,17 @@ impl amiga_gfopenlayout::EventSink for EditorState {
         self.status = c"A native button click reached the editor";
         match event.registration {
             0 => self.reset(),
-            1 => self.undo(),
-            2 => self.redo(),
-            3 => self.edit(Document::invert_active, c"PhotoCraft - Inverted", c"Inverted RGB channels on the active layer"),
-            4 => self.edit(Document::grayscale_active, c"PhotoCraft - Grayscale", c"Converted the active layer to luminance"),
-            5 => self.edit(brighten, c"PhotoCraft - Brighter", c"Raised active-layer brightness by 24"),
-            6 => self.edit(darken, c"PhotoCraft - Darker", c"Lowered active-layer brightness by 24"),
-            7 => self.add_layer(),
-            8 => self.toggle_visibility(),
-            9 => {
+            1 => self.open(),
+            2 => self.save(),
+            3 => self.undo(),
+            4 => self.redo(),
+            5 => self.edit(Document::invert_active, c"PhotoCraft - Inverted", c"Inverted RGB channels on the active layer"),
+            6 => self.edit(Document::grayscale_active, c"PhotoCraft - Grayscale", c"Converted the active layer to luminance"),
+            7 => self.edit(brighten, c"PhotoCraft - Brighter", c"Raised active-layer brightness by 24"),
+            8 => self.edit(darken, c"PhotoCraft - Darker", c"Lowered active-layer brightness by 24"),
+            9 => self.add_layer(),
+            10 => self.toggle_visibility(),
+            11 => {
                 self.title = c"PhotoCraft - Brush selected";
                 self.status = c"Brush tool selected; pointer painting is the next native gate";
             }
@@ -180,7 +246,7 @@ impl amiga_gfopenlayout::EventSink for EditorState {
     }
 
     fn click_ids(&self) -> &'static [&'static core::ffi::CStr] {
-        &[c"new", c"undo", c"redo", c"invert", c"gray", c"brighter", c"darker", c"layer", c"visibility", c"brush"]
+        &[c"new", c"open", c"save", c"undo", c"redo", c"invert", c"gray", c"brighter", c"darker", c"layer", c"visibility", c"brush"]
     }
 
     fn window_title(&self) -> Option<&core::ffi::CStr> {
@@ -189,6 +255,8 @@ impl amiga_gfopenlayout::EventSink for EditorState {
 
     fn refresh(&mut self, ui: &mut amiga_gfopenlayout::Ui<'_, '_>) {
         let _ = ui.set_text(c"statusline", self.status);
+        let _ = ui.set_disabled(c"open", false);
+        let _ = ui.set_disabled(c"save", false);
         let _ = ui.set_disabled(c"undo", self.undo.is_empty());
         let _ = ui.set_disabled(c"redo", self.redo.is_empty());
         let layer_count = self.document.layers().len();
@@ -346,7 +414,7 @@ pub extern "C" fn gf_amiga_main(_args: *const u8, _length: i32) -> i32 {
             runtime.put_str(c"PhotoCraft: native service table invalid\n");
             return 21;
         }
-        let mut editor = match EditorState::new() {
+        let mut editor = match EditorState::new(runtime) {
             Ok(editor) => editor,
             Err(InitError::Background(error)) => {
                 let _ = error;

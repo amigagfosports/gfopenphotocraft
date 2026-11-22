@@ -1,5 +1,5 @@
-GFOpenPhotoCraft 0.1.0 Q1
-========================
+GFOpenPhotoCraft 0.1.0 RC1
+==========================
 
 This is a native AmigaOS 3.x 68040 qualification build of PhotoCraft.
 
@@ -10,14 +10,17 @@ Working in this build:
 - Invert, Grayscale, Brighter and Darker;
 - one-step pixel Undo and Redo;
 - live composited pixel preview.
+- bounded PCF1 Save and Open at SYS:PhotoCraft.pcf;
+- fail-closed PCF1 parsing for truncated, malformed and trailing data.
 
 Not yet qualified:
-- file requesters and IFF/DataTypes open/save;
+- ASL file requesters and IFF/DataTypes import/export;
 - pointer brush painting;
 - upstream egui interface or full .pcraft compatibility;
 - updater installation path.
 
 The 21 November isolated-68040 run qualified launch, Grayscale, Undo, Redo,
-live preview redraw and close-gadget return to Workbench. The tested executable
-SHA-256 is 269066c44383b4a36897031f61b0a5593d3a7778989591470aa88bcb6841bd8a.
-Keep this labelled Q1 until review and the queued self-hosted CI build finish.
+live preview redraw and close-gadget return to Workbench in the earlier Q1
+binary. The exact RC1 Save/Open and hostile-file receipt is recorded in
+NATIVE-UAT-20261122.md and the independent Kitchen job attached to the Forge
+pull request.

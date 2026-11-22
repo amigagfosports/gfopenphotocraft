@@ -8,6 +8,21 @@ pub const MAX_DIMENSION: u16 = 4_096;
 pub const MAX_PIXELS: usize = 1_048_576;
 pub const MAX_LAYERS: usize = 64;
 pub const MAX_NAME_BYTES: usize = 256;
+pub const MAX_FILE_BYTES: usize = 262_144;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FormatStage {
+    Magic,
+    Width,
+    Height,
+    LayerCount,
+    ActiveLayer,
+    LayerName,
+    Visibility,
+    Opacity,
+    Pixels,
+    TrailingData,
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Pixel {
@@ -37,6 +52,8 @@ pub enum ModelError {
     PixelOutOfBounds,
     PixelCountMismatch,
     OutOfMemory,
+    BufferTooSmall,
+    InvalidFormat(FormatStage),
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -217,6 +234,139 @@ impl Document {
         }
         Some(output)
     }
+
+    pub fn encode(&self, output: &mut [u8]) -> Result<usize, ModelError> {
+        let mut writer = Writer::new(output);
+        writer.bytes(b"PCF1")?;
+        writer.u16(self.width)?;
+        writer.u16(self.height)?;
+        writer.u8(u8::try_from(self.layers.len()).map_err(|_| ModelError::LayerLimit)?)?;
+        writer.u8(u8::try_from(self.active).map_err(|_| ModelError::LayerLimit)?)?;
+        for layer in &self.layers {
+            writer.u16(u16::try_from(layer.name.len()).map_err(|_| ModelError::NameTooLong)?)?;
+            writer.bytes(layer.name.as_bytes())?;
+            writer.u8(u8::from(layer.visible))?;
+            writer.u8(layer.opacity)?;
+            for pixel in &layer.pixels {
+                writer.u8(pixel.red)?;
+                writer.u8(pixel.green)?;
+                writer.u8(pixel.blue)?;
+                writer.u8(pixel.alpha)?;
+            }
+        }
+        Ok(writer.len())
+    }
+
+    pub fn decode(input: &[u8]) -> Result<Self, ModelError> {
+        let mut reader = Reader::new(input);
+        if reader.bytes(4, FormatStage::Magic)? != b"PCF1" {
+            return Err(ModelError::InvalidFormat(FormatStage::Magic));
+        }
+        let width = reader.u16(FormatStage::Width)?;
+        let height = reader.u16(FormatStage::Height)?;
+        let pixel_count = checked_pixel_count(width, height)?;
+        let layer_count = usize::from(reader.u8(FormatStage::LayerCount)?);
+        if layer_count == 0 || layer_count > MAX_LAYERS {
+            return Err(ModelError::InvalidFormat(FormatStage::LayerCount));
+        }
+        let active = usize::from(reader.u8(FormatStage::ActiveLayer)?);
+        if active >= layer_count {
+            return Err(ModelError::InvalidFormat(FormatStage::ActiveLayer));
+        }
+        let mut layers = Vec::new();
+        layers.try_reserve_exact(layer_count).map_err(|_| ModelError::OutOfMemory)?;
+        for _ in 0..layer_count {
+            let name_length = usize::from(reader.u16(FormatStage::LayerName)?);
+            if name_length == 0 || name_length > MAX_NAME_BYTES {
+                return Err(ModelError::InvalidFormat(FormatStage::LayerName));
+            }
+            let name_bytes = reader.bytes(name_length, FormatStage::LayerName)?;
+            let name = core::str::from_utf8(name_bytes).map_err(|_| ModelError::InvalidFormat(FormatStage::LayerName))?;
+            let visible = match reader.u8(FormatStage::Visibility)? {
+                0 => false,
+                1 => true,
+                _ => return Err(ModelError::InvalidFormat(FormatStage::Visibility)),
+            };
+            let opacity = reader.u8(FormatStage::Opacity)?;
+            let mut pixels = Vec::new();
+            pixels.try_reserve_exact(pixel_count).map_err(|_| ModelError::OutOfMemory)?;
+            for _ in 0..pixel_count {
+                pixels.push(Pixel {
+                    red: reader.u8(FormatStage::Pixels)?,
+                    green: reader.u8(FormatStage::Pixels)?,
+                    blue: reader.u8(FormatStage::Pixels)?,
+                    alpha: reader.u8(FormatStage::Pixels)?,
+                });
+            }
+            layers.push(Layer { name: copy_name(name)?, visible, opacity, pixels });
+        }
+        if !reader.is_finished() {
+            return Err(ModelError::InvalidFormat(FormatStage::TrailingData));
+        }
+        Ok(Self { width, height, layers, active })
+    }
+}
+
+struct Writer<'a> {
+    output: &'a mut [u8],
+    cursor: usize,
+}
+
+impl<'a> Writer<'a> {
+    const fn new(output: &'a mut [u8]) -> Self {
+        Self { output, cursor: 0 }
+    }
+
+    const fn len(&self) -> usize {
+        self.cursor
+    }
+
+    fn bytes(&mut self, bytes: &[u8]) -> Result<(), ModelError> {
+        let end = self.cursor.checked_add(bytes.len()).ok_or(ModelError::BufferTooSmall)?;
+        let destination = self.output.get_mut(self.cursor..end).ok_or(ModelError::BufferTooSmall)?;
+        destination.copy_from_slice(bytes);
+        self.cursor = end;
+        Ok(())
+    }
+
+    fn u8(&mut self, value: u8) -> Result<(), ModelError> {
+        self.bytes(&[value])
+    }
+
+    fn u16(&mut self, value: u16) -> Result<(), ModelError> {
+        self.bytes(&value.to_be_bytes())
+    }
+}
+
+struct Reader<'a> {
+    input: &'a [u8],
+    cursor: usize,
+}
+
+impl<'a> Reader<'a> {
+    const fn new(input: &'a [u8]) -> Self {
+        Self { input, cursor: 0 }
+    }
+
+    fn bytes(&mut self, length: usize, stage: FormatStage) -> Result<&'a [u8], ModelError> {
+        let end = self.cursor.checked_add(length).ok_or(ModelError::InvalidFormat(stage))?;
+        let bytes = self.input.get(self.cursor..end).ok_or(ModelError::InvalidFormat(stage))?;
+        self.cursor = end;
+        Ok(bytes)
+    }
+
+    fn u8(&mut self, stage: FormatStage) -> Result<u8, ModelError> {
+        self.bytes(1, stage)?.first().copied().ok_or(ModelError::InvalidFormat(stage))
+    }
+
+    fn u16(&mut self, stage: FormatStage) -> Result<u16, ModelError> {
+        let bytes = self.bytes(2, stage)?;
+        Ok(u16::from_be_bytes([bytes[0], bytes[1]]))
+    }
+
+    fn is_finished(&self) -> bool {
+        self.cursor == self.input.len()
+    }
 }
 
 fn checked_pixel_count(width: u16, height: u16) -> Result<usize, ModelError> {
@@ -325,6 +475,31 @@ mod tests {
         let mut document = Document::new(1, 1, Pixel::WHITE)?;
         assert_eq!(document.set_active_pixel(1, 0, Pixel::WHITE), Err(ModelError::PixelOutOfBounds));
         assert_eq!(document.replace_active_pixels(&[]), Err(ModelError::PixelCountMismatch));
+        Ok(())
+    }
+
+    #[test]
+    fn pcf1_round_trips_layers_pixels_and_active_state() -> Result<(), ModelError> {
+        let mut document = Document::new(2, 1, Pixel::rgb(1, 2, 3))?;
+        document.add_layer("Paint", Pixel::TRANSPARENT)?;
+        document.set_active_pixel(1, 0, Pixel { red: 9, green: 8, blue: 7, alpha: 6 })?;
+        let mut bytes = [0_u8; 128];
+        let length = document.encode(&mut bytes)?;
+        let decoded = Document::decode(&bytes[..length])?;
+        assert_eq!(decoded, document);
+        Ok(())
+    }
+
+    #[test]
+    fn pcf1_rejects_truncation_trailing_data_and_hostile_counts() -> Result<(), ModelError> {
+        let document = Document::new(1, 1, Pixel::WHITE)?;
+        let mut bytes = [0_u8; 64];
+        let length = document.encode(&mut bytes)?;
+        assert_eq!(Document::decode(&bytes[..3]), Err(ModelError::InvalidFormat(FormatStage::Magic)));
+        assert_eq!(Document::decode(&bytes[..length + 1]), Err(ModelError::InvalidFormat(FormatStage::TrailingData)));
+        let mut hostile = bytes;
+        hostile[8] = 65;
+        assert_eq!(Document::decode(&hostile[..length]), Err(ModelError::InvalidFormat(FormatStage::LayerCount)));
         Ok(())
     }
 }

@@ -4,7 +4,7 @@ GFOpenPhotoCraft is a native AmigaOS 68k port of the MIT-licensed PhotoCraft
 image editor. It is an Amiga Hunk executable and not a host wrapper, webview or
 remote interface.
 
-## Qualification scope
+## RC1 scope
 
 The first native slice contains a bounded RGBA raster/layer model and a
 GFOpenLayout editor window. It performs real image operations in that model:
@@ -15,14 +15,17 @@ GFOpenLayout editor window. It performs real image operations in that model:
 - raise and lower brightness;
 - undo and redo the last pixel operation;
 - redraw the preview from composited layer pixels.
+- save the bounded layered RGBA model as PCF1 to `SYS:PhotoCraft.pcf`;
+- open PCF1 from `SYS:PhotoCraft.pcf`, rejecting malformed, truncated,
+  oversized and trailing data without replacing the live document.
 
 The model supports images up to 4,096 pixels on either side, subject to the
 1,048,576-pixel native memory guard, and up to 64 layers. Host tests cover
 compositing, operations, history input and hostile sizes.
 
-Open and Save are deliberately disabled until the ASL requester and
-GFOpenDataTypes/IFF path has native proof. Pointer brush painting is also a
-later gate. The Q1 package is therefore not called an RC.
+PCF1 is the native subset format for this first release candidate. An ASL
+requester, GFOpenDataTypes IFF import/export and pointer brush painting remain
+later gates; the UI does not claim those features.
 
 ## Native evidence
 
@@ -33,8 +36,9 @@ Grayscale redrew all 24 preview cells with distinct luminance values, Undo
 restored the colour raster, and Redo restored the grayscale raster. Window
 titles and status text followed each action. The close gadget then removed the
 window and AmigaDOS `Status` confirmed that PhotoCraft was no longer running.
-The local Q1 native gates are complete; RC promotion is left to review after
-the queued self-hosted CI build supplies its independent receipt.
+That receipt covers the earlier Q1 raster interaction build. The RC1 PCF1
+candidate has independent host and Hunk build proof; its exact native Save,
+Open and hostile-file run is recorded separately in `NATIVE-UAT-20261122.md`.
 
 ## Native services
 
@@ -45,5 +49,6 @@ the queued self-hosted CI build supplies its independent receipt.
 ## Build gates
 
 `check.sh` runs formatting, host tests, clippy, the freestanding m68k build,
-symbol checks and relocation checks. `package-qualification.sh` additionally
-uses an Amiga-capable binutils prefix to produce the Hunk and LHA archive.
+symbol checks and relocation checks. `build-amiga.sh` produces the same Hunk
+plate on the os32 Kitchen stove; `package-qualification.sh` optionally wraps
+that plate in an LHA archive when `lha` is installed.
