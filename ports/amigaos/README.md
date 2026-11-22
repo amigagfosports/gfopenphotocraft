@@ -37,8 +37,10 @@ restored the colour raster, and Redo restored the grayscale raster. Window
 titles and status text followed each action. The close gadget then removed the
 window and AmigaDOS `Status` confirmed that PhotoCraft was no longer running.
 That receipt covers the earlier Q1 raster interaction build. The RC1 PCF1
-candidate has independent host and Hunk build proof; its exact native Save,
-Open and hostile-file run is recorded separately in `NATIVE-UAT-20261122.md`.
+candidate at executable SHA-256
+`9b545f0135b66de0959db48a34b5bb8dc941ff25fed1ef6469559f2303da1a2b`
+has independent host and Hunk build proof; its exact native Save, Open and
+hostile-file run is recorded separately in `NATIVE-UAT-20261122.md`.
 
 ## Native services
 
