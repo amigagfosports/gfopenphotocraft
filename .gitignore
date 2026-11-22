@@ -2,6 +2,9 @@
 /plan/
 /target
 target/
+ports/amigaos/target-hunk/
+ports/amigaos/target-kitchen/
+ports/amigaos/build-amiga/
 /dist
 /corpus
 /log
